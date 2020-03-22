@@ -1,0 +1,21 @@
+language: generic 
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t testing-frontend -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true testing-frontend npm test
+
+after_success:
+  - docker build -t sebabanan/multi-client ./client
+  - docker build -t sebabanan/multi-nginx ./nginx
+  - docker build -t sebabanan/multi-server ./server
+  - docker build -t sebabanan/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push sebabanan/multi-client
+  - docker push sebabanan/multi-nginx
+  - docker push sebabanan/multi-server
+  - docker push sebabanan/multi-worker
